@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	versionURL = "https://golang.org/VERSION?m=text"
+	versionURL = "https://go.dev/VERSION?m=text"
 
 	// https://dl.google.com/go/go1.16.3.linux-amd64.tar.gz
 	downloadURL = "https://dl.google.com/go/%s.%s-%s.tar.gz"
