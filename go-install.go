@@ -6,8 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"runtime"
+	"regexp"
 )
 
 const (
@@ -29,12 +30,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if newestVersion <= runtime.Version() {
-		fmt.Println("already up to date")
+	currentVersion, err := getCurrentVersion()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if newestVersion <= currentVersion {
+		fmt.Printf("already up to date (%s)\n", currentVersion)
 		return
 	}
 
-	fmt.Println("updating from", runtime.Version(), "to", newestVersion)
+	fmt.Println("updating from", currentVersion, "to", newestVersion)
 
 	src, err := downloadTAR(newestVersion)
 	if err != nil {
@@ -61,6 +67,17 @@ func getNewestVersion() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	return string(buf), nil
+}
+
+func getCurrentVersion() (string, error) {
+	buf, err := exec.Command(filepath.Join(installPath, "go", "bin", "go"), "version").Output()
+	if err != nil {
+		return "", err
+	}
+
+	buf = regexp.MustCompile(`go\d\.\d+(\.\d+)?`).Find(buf)
 
 	return string(buf), nil
 }
