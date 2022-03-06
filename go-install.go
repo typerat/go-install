@@ -1,8 +1,6 @@
 package main
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"fmt"
 	"io"
 	"log"
@@ -44,10 +42,12 @@ func main() {
 	}
 	defer os.RemoveAll(src)
 
-	err = install(src)
+	err = extract(src)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("done")
 }
 
 func getNewestVersion() (string, error) {
@@ -63,64 +63,4 @@ func getNewestVersion() (string, error) {
 	}
 
 	return string(buf), nil
-}
-
-func install(src string) error {
-	fmt.Println("extracting", src, "to", installPath)
-
-	goroot := filepath.Join(installPath, "go")
-	err := os.RemoveAll(goroot)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	plain, err := gzip.NewReader(f)
-	if err != nil {
-		return err
-	}
-
-	tr := tar.NewReader(plain)
-
-	for {
-		header, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		if header.Typeflag != tar.TypeReg {
-			continue
-		}
-
-		path := filepath.Join(installPath, header.Name)
-		dir := filepath.Dir(path)
-
-		err = os.MkdirAll(dir, 0755)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(path)
-		out, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, os.FileMode(header.Mode))
-		if err != nil {
-			return err
-		}
-
-		_, err = io.Copy(out, tr)
-		if err != nil {
-			return err
-		}
-
-		out.Close()
-	}
-
-	return nil
 }
