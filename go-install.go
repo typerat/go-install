@@ -74,7 +74,7 @@ func getNewestVersion() (string, error) {
 func getCurrentVersion() (string, error) {
 	buf, err := exec.Command(filepath.Join(installPath, "go", "bin", "go"), "version").Output()
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	buf = regexp.MustCompile(`go\d\.\d+(\.\d+)?`).Find(buf)
