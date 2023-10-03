@@ -31,7 +31,7 @@ func extract(src string) error {
 	// add progress bar
 	bar := progressbar.DefaultBytes(
 		stat.Size(),
-		"extracting",
+		"extracting ",
 	)
 	r := io.TeeReader(f, bar)
 

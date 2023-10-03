@@ -1,8 +1,9 @@
 package main
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -63,12 +64,21 @@ func getNewestVersion() (string, error) {
 	}
 	defer res.Body.Close()
 
-	buf, err := io.ReadAll(res.Body)
-	if err != nil {
+	s := bufio.NewScanner(res.Body)
+
+	exp := regexp.MustCompile(`go\d+\.\d+\.\d+`)
+
+	for s.Scan() {
+		if exp.MatchString(s.Text()) {
+			return s.Text(), nil
+		}
+	}
+
+	if s.Err() != nil {
 		return "", err
 	}
 
-	return string(buf), nil
+	return "", errors.New("version not found")
 }
 
 func getCurrentVersion() (string, error) {
